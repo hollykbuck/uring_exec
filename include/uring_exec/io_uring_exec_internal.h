@@ -135,6 +135,9 @@ struct trivial_scheduler {
     struct operation: io_uring_exec_task {
         using operation_state_concept = stdexec::operation_state_t;
 
+        Receiver receiver;
+        Context *context;
+
         void start() noexcept {
             // Private customization point.
             start_operation(context, this);
@@ -159,9 +162,6 @@ struct trivial_scheduler {
                 stdexec::set_stopped(std::move(self->receiver));
             }}
         };
-
-        Receiver receiver;
-        Context *context;
     };
     struct sender {
         using sender_concept = stdexec::sender_t;
