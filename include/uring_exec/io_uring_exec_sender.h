@@ -75,7 +75,7 @@ inline constexpr auto make_uring_sender_v = make_uring_sender_t<io_uring_prep_in
 
 ////////////////////////////////////////////////////////////////////// Asynchronous senders
 
-inline constexpr auto async_oepnat      = make_uring_sender_v<io_uring_prep_openat>;
+inline constexpr auto async_openat      = make_uring_sender_v<io_uring_prep_openat>;
 inline constexpr auto async_readv       = make_uring_sender_v<io_uring_prep_readv>;
 inline constexpr auto async_readv2      = make_uring_sender_v<io_uring_prep_readv2>;
 inline constexpr auto async_writev      = make_uring_sender_v<io_uring_prep_writev>;
