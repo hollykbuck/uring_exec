@@ -132,11 +132,16 @@ using intrusive_operation_map = trivial_intrusive_map<intrusive_operation_queue>
 template <typename Context>
 struct trivial_scheduler {
     template <stdexec::receiver Receiver>
-    struct operation: io_uring_exec_task {
-        using operation_state_concept = stdexec::operation_state_t;
-
+    struct operation_impl: io_uring_exec_task {
         Receiver receiver;
         Context *context;
+
+        operation_impl(Receiver receiver, Context *context) noexcept(
+                std::is_nothrow_move_constructible_v<Receiver>)
+            : io_uring_exec_task(this_vtable),
+              receiver(std::move(receiver)),
+              context(context)
+        {}
 
         void start() noexcept {
             // Private customization point.
@@ -145,7 +150,7 @@ struct trivial_scheduler {
 
         inline constexpr static vtable this_vtable {
             {.complete = [](io_uring_exec_task *_self) noexcept {
-                auto &receiver = static_cast<operation*>(_self)->receiver;
+                auto &receiver = static_cast<operation_impl*>(_self)->receiver;
                 using env_type = stdexec::env_of_t<Receiver>;
                 using stop_token_type = stdexec::stop_token_of_t<env_type>;
                 if constexpr (stdexec::unstoppable_token<stop_token_type>) {
@@ -158,11 +163,27 @@ struct trivial_scheduler {
                     : stdexec::set_value(std::move(receiver));
             }},
             {.cancel = [](io_uring_exec_task *_self) noexcept {
-                auto self = static_cast<operation*>(_self);
+                auto self = static_cast<operation_impl*>(_self);
                 stdexec::set_stopped(std::move(self->receiver));
             }}
         };
     };
+
+    template <stdexec::receiver Receiver>
+    struct operation {
+        using operation_state_concept = stdexec::operation_state_t;
+
+        std::unique_ptr<operation_impl<Receiver>> impl;
+
+        operation(Receiver receiver, Context *context)
+            : impl(std::make_unique<operation_impl<Receiver>>(std::move(receiver), context))
+        {}
+
+        void start() noexcept {
+            impl->start();
+        }
+    };
+
     struct sender {
         using sender_concept = stdexec::sender_t;
         using completion_signatures = stdexec::completion_signatures<
@@ -179,8 +200,8 @@ struct trivial_scheduler {
         env get_env() const noexcept { return {context}; }
 
         template <stdexec::receiver Receiver>
-        operation<Receiver> connect(Receiver receiver) noexcept {
-            return {{operation<Receiver>::this_vtable}, std::move(receiver), context};
+        operation<Receiver> connect(Receiver receiver) {
+            return {std::move(receiver), context};
         }
 
         Context *context;
