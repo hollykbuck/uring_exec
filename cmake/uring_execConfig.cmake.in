@@ -1,0 +1,7 @@
+@PACKAGE_INIT@
+
+include(CMakeFindDependencyMacro)
+find_dependency(P2300 CONFIG REQUIRED)
+find_dependency(liburing CONFIG REQUIRED)
+
+include("${CMAKE_CURRENT_LIST_DIR}/uring_execTargets.cmake")

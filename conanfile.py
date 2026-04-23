@@ -45,6 +45,8 @@ class UringExecConan(ConanFile):
         copy(self, "*.h", include_src, os.path.join(self.package_folder, "include"))
 
     def package_info(self):
+        self.cpp_info.set_property("cmake_file_name", "uring_exec")
+        self.cpp_info.set_property("cmake_target_name", "uring_exec::uring_exec")
         self.cpp_info.bindirs = []
         self.cpp_info.libdirs = []
         self.cpp_info.includedirs = ["include"]
