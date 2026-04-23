@@ -46,7 +46,7 @@ auto echo(io_uring_exec::scheduler scheduler, int client_fd) {
               | stdexec::let_value([=, &buf](int written_bytes) {
                     return stdexec::just(written_bytes == 0 || buf[0] == '@');
                 })
-              | exec::repeat_effect_until();
+              | exec::repeat_until();
         })
       | stdexec::let_value([=] {
             std::cout << "Closing client..." << std::endl;
@@ -64,7 +64,7 @@ auto server(io_uring_exec::scheduler scheduler, int server_fd, exec::async_scope
             scope.spawn(echo(scheduler, client_fd));
             return stdexec::just(false);
         })
-      | exec::repeat_effect_until();
+      | exec::repeat_until();
 }
 
 int main() {
