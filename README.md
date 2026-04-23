@@ -398,6 +398,20 @@ See the [`/examples`](/examples) directory for more usage examples.
 
 This is a C++20 header-only library; simply include it in your project.
 
+### Conan
+
+This repository also supports Conan packaging.
+
+Use:
+
+```bash
+conan create . -s compiler.cppstd=20 --build=liburing/* --build=uring_exec/*
+```
+
+`liburing` should be built from source on the local machine instead of reusing a generic prebuilt binary package. Its installed public headers depend on the detected system environment during `configure`, and a mismatched binary package may fail to compile together with `stdexec`.
+
+The command above has been verified with the included `test_package`.
+
 If you want to try some examples or benchmark tests, use `xmake`:
 * `xmake build examples`: Build all example files.
 * `xmake run <example_name>`: Run a specified example application. (For example, `xmake run hello_coro`.)
